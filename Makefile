@@ -1,3 +1,4 @@
+
 ####################################
 # Target and Toolchain Setup
 ####################################
@@ -8,7 +9,7 @@ FLOAT-ABI   = -mfloat-abi=hard
 MCUFLAGS    = -mcpu=$(MCU) -mthumb $(FPU) $(FLOAT-ABI)
 
 CC          = arm-none-eabi-gcc
-CXX         = arm-none-eabi-g++
+CXX         = arm-none-eabi-g++ 
 LD          = arm-none-eabi-gcc
 OBJCOPY     = arm-none-eabi-objcopy
 SIZE        = arm-none-eabi-size
@@ -49,8 +50,8 @@ OBJS    += $(patsubst %.s,$(BUILD_DIR)/%.o,$(ASM_SRCS))
 ####################################
 # Flags
 ####################################
-CFLAGS   = $(MCUFLAGS) -Wall -O2 -std=c11 -ffreestanding -fdata-sections -ffunction-sections
-CXXFLAGS = $(MCUFLAGS) -Wall -O2 -std=c++17 -fno-exceptions -fno-rtti -ffreestanding -fdata-sections -ffunction-sections
+CFLAGS   = $(MCUFLAGS) -Wall -O0 -g3 -std=c11 -ffreestanding -fdata-sections -ffunction-sections
+CXXFLAGS = $(MCUFLAGS) -Wall -O0 -g3 -std=c++17 -fno-exceptions -fno-rtti -ffreestanding -fdata-sections -ffunction-sections
 LDFLAGS  = $(MCUFLAGS) -Wl,--gc-sections -T$(LINKER)
 
 ####################################
@@ -65,6 +66,7 @@ $(BUILD_DIR)/$(TARGET).elf: $(OBJS)
 	$(OBJCOPY) -O binary $@ $(BUILD_DIR)/$(TARGET).bin
 	$(OBJCOPY) -O ihex $@ $(BUILD_DIR)/$(TARGET).hex
 	$(SIZE) $@
+
 
 # Compilation rules
 $(BUILD_DIR)/%.o: %.c
