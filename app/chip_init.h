@@ -1,3 +1,7 @@
+#ifndef CHIP_INIT_H
+#define CHIP_INIT_H
+
+
 #include "stm32f4xx_hal.h"
 
 

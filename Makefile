@@ -17,7 +17,7 @@ SIZE        = arm-none-eabi-size
 ####################################
 # Directories
 ####################################
-SRC_DIRS    = app system startup Drivers/STM32F4xx_HAL_Driver/Src Middlewares/Third_Party/FreeRTOS Middlewares/Third_Party/FreeRTOS/portable/GCC/ARM_CM4F Middlewares/Third_Party/FreeRTOS/portable/MemMang
+SRC_DIRS    = app system startup config Drivers/STM32F4xx_HAL_Driver/Src Middlewares/Third_Party/FreeRTOS Middlewares/Third_Party/FreeRTOS/portable/GCC/ARM_CM4F Middlewares/Third_Party/FreeRTOS/portable/MemMang
 BUILD_DIR   = build
 LINKER      = linker/STM32F412ZGTX_FLASH.ld
 
@@ -52,7 +52,8 @@ OBJS    += $(patsubst %.s,$(BUILD_DIR)/%.o,$(ASM_SRCS))
 ####################################
 CFLAGS   = $(MCUFLAGS) -Wall -O0 -g3 -std=c11 -ffreestanding -fdata-sections -ffunction-sections
 CXXFLAGS = $(MCUFLAGS) -Wall -O0 -g3 -std=c++17 -fno-exceptions -fno-rtti -ffreestanding -fdata-sections -ffunction-sections
-LDFLAGS  = $(MCUFLAGS) -Wl,--gc-sections -T$(LINKER)
+LDFLAGS  = $(MCUFLAGS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--gc-sections -T$(LINKER)
+
 
 ####################################
 # Build Targets
