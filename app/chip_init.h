@@ -42,8 +42,10 @@
 #define LD2_GPIO_Port GPIOB
 
 
-
 //-------function prototype------------
 void CHIP_ErrorHandler(void);
 void CHIP_SystemClockConfig(void);
 void CHIP_GpioInit(void);
+void CHIP_Uart3Init(UART_HandleTypeDef* uart3);
+
+#endif

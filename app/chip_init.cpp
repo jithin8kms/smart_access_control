@@ -1,5 +1,6 @@
 #include <chip_init.h>
 
+
 /**
   * @brief  This function is executed in case of error occurrence.
   * @retval None
@@ -96,13 +97,6 @@ void CHIP_GpioInit(void)
   gpio_init_struct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &gpio_init_struct);
 
-  /*Configure GPIO pins : STLK_RX_Pin STLK_TX_Pin */
-  gpio_init_struct.Pin = STLK_RX_Pin|STLK_TX_Pin;
-  gpio_init_struct.Mode = GPIO_MODE_AF_PP;
-  gpio_init_struct.Pull = GPIO_NOPULL;
-  gpio_init_struct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  gpio_init_struct.Alternate = GPIO_AF7_USART3;
-  HAL_GPIO_Init(GPIOD, &gpio_init_struct);
 
   /*Configure GPIO pin : USB_PowerSwitchOn_Pin */
   gpio_init_struct.Pin = USB_PowerSwitchOn_Pin;
@@ -127,4 +121,37 @@ void CHIP_GpioInit(void)
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
+}
+
+void CHIP_Uart3Init(UART_HandleTypeDef* uart3Ptr)
+{
+  // order matters
+  __HAL_RCC_USART3_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Alternate = GPIO_AF7_USART3;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct); 
+
+
+  HAL_NVIC_SetPriority(USART3_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(USART3_IRQn);
+
+  uart3Ptr->Instance = USART3;
+  uart3Ptr->Init.BaudRate = 115200;
+  uart3Ptr->Init.WordLength = UART_WORDLENGTH_8B;
+  uart3Ptr->Init.StopBits = UART_STOPBITS_1;
+  uart3Ptr->Init.Parity = UART_PARITY_NONE;
+  uart3Ptr->Init.Mode = UART_MODE_TX_RX;
+  uart3Ptr->Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  uart3Ptr->Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(uart3Ptr) != HAL_OK)
+  {
+    CHIP_ErrorHandler();
+  }
+
 }
