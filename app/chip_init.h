@@ -1,9 +1,7 @@
 #ifndef CHIP_INIT_H
 #define CHIP_INIT_H
 
-
 #include "stm32f4xx_hal.h"
-
 
 /* nucleo board private defines-------------------------*/
 #define USER_Btn_Pin GPIO_PIN_13
@@ -41,11 +39,10 @@
 #define LD2_Pin GPIO_PIN_7
 #define LD2_GPIO_Port GPIOB
 
-
 //-------function prototype------------
 void CHIP_ErrorHandler(void);
 void CHIP_SystemClockConfig(void);
 void CHIP_GpioInit(void);
-void CHIP_Uart3Init(UART_HandleTypeDef* uart3);
+void CHIP_Uart3Init(UART_HandleTypeDef *uart3);
 
 #endif
