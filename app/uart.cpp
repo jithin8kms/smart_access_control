@@ -1,43 +1,106 @@
 #include "uart.h"
+#include <string.h>
 
-static uart_t uart;
+static uart_t uart = {0};
+TaskHandle_t tx_task_handle = NULL;
 
 #define UART_RX_BUF_SIZE 128
-
-volatile uint8_t uart_rx_buf[UART_RX_BUF_SIZE];
-volatile uint8_t uart_tx_buf[UART_RX_BUF_SIZE];
-volatile uint16_t uart_rx_head = 0;
-volatile uint16_t uart_tx_head = 0;
-volatile uint16_t uart_tx_tail = 0;
-uint8_t tx_busy = 0;
 
 void UART_Init(UART_HandleTypeDef *uart3Ptr)
 {
 	configASSERT(uart3Ptr != NULL);
 	uart.uart3Ptr = uart3Ptr;
 	HAL_UART_Receive_IT(uart.uart3Ptr, &uart.rx_char, 1);
+
+	// create Q
+	uart.queue_rx = xQueueCreate(Q_SIZE, sizeof(uint8_t));
+	uart.queue_tx = xQueueCreate(Q_SIZE, sizeof(tx_struct));
+
+	configASSERT(uart.queue_rx != NULL);
+	configASSERT(uart.queue_tx != NULL);
 }
 
+// rx task
+//--------------------------------------------
 void UART_UartRxTask(void *arg)
 {
-
-	/*
-	uart.queue_rx = xQueueCreate( 10, sizeof( uint8_t ) );
-	configASSERT(uart.queue_rx != NULL);
-
-	while(1)
+	static int buffer_head = 0;
+	static bool discard_data = false;
+	uint8_t data = 0;
+	while (1)
 	{
-		uint8_t data;
-
 		xQueueReceive(uart.queue_rx, &data, portMAX_DELAY);
-	}*/
+
+		if (discard_data == true)
+		{
+			if (data == '\r' || data == '\n' || data == '\0')
+			{
+				discard_data = false;
+			}
+		}
+
+		else if (data == '\r' || data == '\n' || data == '\0')
+		{
+			uart.password_buffer[buffer_head] = '\0';
+			// clear Q
+			uint8_t dummy;
+			while (xQueueReceive(uart.queue_rx, &dummy, 0) == pdTRUE)
+				;
+			SendMessage((const uint8_t *)uart.password_buffer, buffer_head);
+			buffer_head = 0;
+
+			if ((strcmp((char *)uart.password_buffer, SAVED_PASSWORD) == 0))
+			{
+				SendMessage((const uint8_t *)ACCESS_GRANTED_MSG, strlen(ACCESS_GRANTED_MSG));
+			}
+			else
+			{
+				SendMessage((const uint8_t *)WRONG_PASSWORD_MSG, strlen(WRONG_PASSWORD_MSG));
+			}
+		}
+
+		else if (buffer_head < BUFFER_SIZE - 1)
+		{
+			// add incoming char to password buffer
+			uart.password_buffer[buffer_head++] = data;
+		}
+		else
+		{
+			buffer_head = 0;
+			discard_data = true;
+			memset(uart.password_buffer, 0, sizeof(uart.password_buffer));
+
+			uint8_t dummy;
+			while (xQueueReceive(uart.queue_rx, &dummy, 0) == pdTRUE)
+				;
+
+			SendMessage((const uint8_t *)WRONG_PASSWORD_MSG, strlen(WRONG_PASSWORD_MSG));
+		}
+	}
+}
+
+// tx task
+//--------------------------------------------
+void UART_UartTxTask(void *arg)
+{
+	tx_task_handle = xTaskGetCurrentTaskHandle();
+	while (1)
+	{
+		tx_struct tx_data = {0};
+		xQueueReceive(uart.queue_tx, &tx_data, portMAX_DELAY);
+
+		HAL_UART_Transmit_IT(uart.uart3Ptr, (const uint8_t *)&tx_data.msg, tx_data.size);
+
+		// transmit data and task waits untill ISR notifies
+		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+	}
 }
 
 // uart rx interrupt handler
 //---------------------------------------------------------------------------
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	/*
+
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	if (huart->Instance == USART3)
 	{
@@ -45,44 +108,29 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	}
 	HAL_UART_Receive_IT(uart.uart3Ptr, &uart.rx_char, 1);
 
-	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);*/
-
-	if (huart->Instance == USART3)
-	{
-		uint8_t c = uart.rx_char;
-		uart_rx_buf[uart_rx_head++] = c;
-		if (uart_rx_head >= UART_RX_BUF_SIZE)
-			uart_rx_head = 0;
-
-		// queue for TX
-		uart_tx_buf[uart_tx_head++] = c;
-
-		if (uart_tx_head >= UART_RX_BUF_SIZE)
-			uart_tx_head = 0;
-
-		if (!tx_busy)
-		{
-			tx_busy = 1;
-			HAL_UART_Transmit_IT(uart.uart3Ptr, (uint8_t *)&uart_tx_buf[uart_tx_tail], 1);
-		}
-		HAL_UART_Receive_IT(uart.uart3Ptr, &uart.rx_char, 1);
-	}
+	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
+// uart tx interrupt handler
+//---------------------------------------------------------------------------
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if (huart->Instance == USART3)
-	{
-		uart_tx_tail++;
-		if (uart_tx_tail >= UART_RX_BUF_SIZE)
-			uart_tx_tail = 0;
-		if (uart_tx_tail != uart_tx_head)
-		{
-			HAL_UART_Transmit_IT(uart.uart3Ptr, (uint8_t *)&uart_tx_buf[uart_tx_tail], 1);
-		}
-		else
-		{
-			tx_busy = 0;
-		}
-	}
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+	// notify tx task that tx is complete
+	vTaskNotifyGiveFromISR(tx_task_handle, &xHigherPriorityTaskWoken);
+
+	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+}
+
+// construct and send msg to Q
+//---------------------------------------------------------------------------
+void SendMessage(const uint8_t *msg, uint8_t msg_len)
+{
+	tx_struct msg_struct = {0};
+
+	memcpy(msg_struct.msg, msg, msg_len);
+	msg_struct.size = msg_len;
+
+	xQueueSend(uart.queue_tx, &msg_struct, portMAX_DELAY);
 }

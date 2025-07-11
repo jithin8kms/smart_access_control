@@ -32,8 +32,9 @@ int main()
 
 	// xTaskCreate(UART_UartRxTask, "Uart_RX", 128, nullptr, 1, nullptr);
 
-	xTaskCreate(blink_task, "Blink", 256, nullptr, 2, nullptr);
-	// xTaskCreate(UART_UartRxTask, "echo", 256, nullptr, 1, nullptr);
+	xTaskCreate(blink_task, "Blink", 256, nullptr, 3, nullptr);
+	xTaskCreate(UART_UartRxTask, "RxTask", 256, nullptr, 2, nullptr);
+	xTaskCreate(UART_UartTxTask, "TxTask", 256, nullptr, 1, nullptr);
 
 	vTaskStartScheduler();
 	while (1)
