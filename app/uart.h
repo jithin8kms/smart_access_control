@@ -5,9 +5,10 @@
 
 #include "chip_init.h"
 #include "queue.h"
+#include "../config/common_config.h"
+#include <string.h>
 
-#define MAX_PASSWORD_SIZE 12
-#define BUFFER_SIZE (MAX_PASSWORD_SIZE + 1)  // 1 byte for termination char
+#define BUFFER_SIZE (MAX_PASSWORD_SIZE + 1) // 1 byte for termination char
 #define Q_SIZE 30
 
 #define SAVED_PASSWORD "123"

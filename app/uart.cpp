@@ -1,13 +1,14 @@
 #include "uart.h"
-#include <string.h>
 
 static uart_t uart = {0};
-TaskHandle_t tx_task_handle = NULL;
-
+TaskHandle_t tx_task_handle;
 #define UART_RX_BUF_SIZE 128
 
 void UART_Init(UART_HandleTypeDef *uart3Ptr)
 {
+	xTaskCreate(UART_UartRxTask, "RxTask", 256, nullptr, 2, nullptr);
+	xTaskCreate(UART_UartTxTask, "TxTask", 256, nullptr, 1, nullptr);
+
 	configASSERT(uart3Ptr != NULL);
 	uart.uart3Ptr = uart3Ptr;
 	HAL_UART_Receive_IT(uart.uart3Ptr, &uart.rx_char, 1);
@@ -49,14 +50,7 @@ void UART_UartRxTask(void *arg)
 			SendMessage((const uint8_t *)uart.password_buffer, buffer_head);
 			buffer_head = 0;
 
-			if ((strcmp((char *)uart.password_buffer, SAVED_PASSWORD) == 0))
-			{
-				SendMessage((const uint8_t *)ACCESS_GRANTED_MSG, strlen(ACCESS_GRANTED_MSG));
-			}
-			else
-			{
-				SendMessage((const uint8_t *)WRONG_PASSWORD_MSG, strlen(WRONG_PASSWORD_MSG));
-			}
+			xQueueOverwrite(password_queue, uart.password_buffer);
 		}
 
 		else if (buffer_head < BUFFER_SIZE - 1)
