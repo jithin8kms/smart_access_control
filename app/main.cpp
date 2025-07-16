@@ -5,6 +5,7 @@
 #include "uart.h"
 #include <string.h>
 #include "access_control.h"
+#include "watchdog.h"
 
 extern "C" void SystemInit(void);
 UART_HandleTypeDef uart3;
@@ -23,7 +24,7 @@ int main()
 	HAL_Init();
 	CHIP_SystemClockConfig();
 	CHIP_GpioInit();
-
+	// WTDG_Init();
 	CHIP_Uart3Init(&uart3);
 	UART_Init(&uart3);
 	ACTRL_Init();
@@ -35,8 +36,6 @@ int main()
 	// xTaskCreate(UART_UartRxTask, "Uart_RX", 128, nullptr, 1, nullptr);
 
 	xTaskCreate(blink_task, "Blink", 256, nullptr, 3, nullptr);
-
-
 
 	vTaskStartScheduler();
 	while (1)

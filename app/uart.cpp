@@ -30,6 +30,7 @@ void UART_UartRxTask(void *arg)
 	uint8_t data = 0;
 	while (1)
 	{
+		//WTDG_Kick();
 		xQueueReceive(uart.queue_rx, &data, portMAX_DELAY);
 
 		if (discard_data == true)
@@ -80,6 +81,7 @@ void UART_UartTxTask(void *arg)
 	tx_task_handle = xTaskGetCurrentTaskHandle();
 	while (1)
 	{
+		//WTDG_Kick();
 		tx_struct tx_data = {0};
 		xQueueReceive(uart.queue_tx, &tx_data, portMAX_DELAY);
 

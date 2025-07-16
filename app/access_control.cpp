@@ -17,6 +17,7 @@ void ACTRL_AuthTask(void *arg)
 
   while (1)
   {
+    //WTDG_Kick();
     xQueueReceive(password_queue, password, portMAX_DELAY);
 
     if ((strcmp((char *)password, SAVED_PASSWORD) == 0))

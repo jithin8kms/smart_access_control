@@ -7,6 +7,7 @@
 #include "queue.h"
 #include "../config/common_config.h"
 #include <string.h>
+#include "watchdog.h"
 
 #define BUFFER_SIZE (MAX_PASSWORD_SIZE + 1) // 1 byte for termination char
 #define Q_SIZE 30

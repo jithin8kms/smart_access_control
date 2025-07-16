@@ -7,6 +7,7 @@
 #include <chip_init.h>
 #include "../config/common_config.h"
 #include "uart.h"
+#include "watchdog.h"
 
 #define SAVED_PASSWORD "123"
 #define PASSWORD_SIZE sizeof(SAVED_PASSWORD)
