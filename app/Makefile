@@ -17,7 +17,7 @@ SIZE        = arm-none-eabi-size
 ####################################
 # Directories
 ####################################
-SRC_DIRS    = app system startup config Drivers/STM32F4xx_HAL_Driver/Src Middlewares/Third_Party/FreeRTOS Middlewares/Third_Party/FreeRTOS/portable/GCC/ARM_CM4F Middlewares/Third_Party/FreeRTOS/portable/MemMang
+SRC_DIRS    = source system startup config Drivers/STM32F4xx_HAL_Driver/Src Middlewares/Third_Party/FreeRTOS Middlewares/Third_Party/FreeRTOS/portable/GCC/ARM_CM4F Middlewares/Third_Party/FreeRTOS/portable/MemMang
 BUILD_DIR   = build
 LINKER      = linker/STM32F412ZGTX_FLASH.ld
 
@@ -32,7 +32,7 @@ INCLUDES = \
   -IMiddlewares/Third_Party/FreeRTOS/include \
   -IMiddlewares/Third_Party/FreeRTOS/portable/GCC/ARM_CM4F \
   -Iconfig \
-  -Iapp \
+  -Isource \
   -Iinclude
 
 ####################################

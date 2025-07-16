@@ -2,14 +2,42 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build Project",
+      "label": "Build App",
       "type": "shell",
       "command": "make",
-      "args": [],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      }
+      "options": {
+        "cwd": "${workspaceFolder}/app"
+      },
+      "group": "build"
+    },
+    {
+      "label": "Build Bootloader",
+      "type": "shell",
+      "command": "make",
+      "options": {
+        "cwd": "${workspaceFolder}/bootloader"
+      },
+      "group": "build"
+    },
+    {
+      "label": "Clean App",
+      "type": "shell",
+      "command": "make",
+      "args": ["clean"],
+      "options": {
+        "cwd": "${workspaceFolder}/app"
+      },
+      "group": "none"
+    },
+    {
+      "label": "Clean Bootloader",
+      "type": "shell",
+      "command": "make",
+      "args": ["clean"],
+      "options": {
+        "cwd": "${workspaceFolder}/bootloader"
+      },
+      "group": "none"
     }
   ]
 }

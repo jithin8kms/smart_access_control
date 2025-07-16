@@ -16,12 +16,12 @@
       ],
       "device": "STM32F412ZG",
       "runToEntryPoint": "main",
-      "executable": "build/smart_access_control.elf",
+      "executable": "app/build/smart_access_control.elf",
       "postRestartCommands": [
         "monitor reset halt",
         "monitor halt"
       ],
-      "svdFile": "system/STM32F412.svd"
+      "svdFile": "app/system/STM32F412.svd"
     }
   ]
 }
