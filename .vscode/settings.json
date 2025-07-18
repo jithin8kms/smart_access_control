@@ -1,8 +1,9 @@
 {
     "files.associations": {
-        "*.cpp": "cpp",
-        "task.h": "c",
-        "stm32f4xx_it.h": "c"
+      "*.cpp": "cpp",
+      "task.h": "c",
+      "stm32f4xx_it.h": "c",
+      "stdint.h": "c"
     },
     "terminal.integrated.scrollback": 10000,
     "terminal.integrated.cursorBlinking": true,
@@ -15,5 +16,7 @@
     "[cpp]": {
     "editor.defaultFormatter": "ms-vscode.cpptools",
     "editor.formatOnSave": true
-    }
+    },
+    "cortex-debug.variableUseNaturalFormat": false,
+    "C_Cpp.errorSquiggles": "enabledIfIncludesResolve"
 }
