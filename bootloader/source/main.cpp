@@ -34,6 +34,10 @@ int main()
 		dummy_data[i] = i; // Fills with 0x00, 0x01, ..., 0xFF
 	}
 	// FLASH_Write(APP_START_ADDRESS, dummy_data, 256);
+	while (1)
+	{
+		SPI_Receive();
+	}
 
 	return 0;
 }

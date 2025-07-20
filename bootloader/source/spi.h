@@ -6,5 +6,5 @@
 #include "uart.h"
 
 void SPI_Init(SPI_HandleTypeDef *spi1);
-
+void SPI_Receive(void);
 #endif
