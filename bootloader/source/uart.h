@@ -13,6 +13,6 @@ struct uart_t
 
 void UART_Init(UART_HandleTypeDef *uart3);
 
-void SendMessage(const uint8_t *msg, uint8_t msg_len);
+void UART_LOG(const uint8_t *msg, uint8_t msg_len);
 
 #endif

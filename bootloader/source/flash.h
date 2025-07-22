@@ -7,6 +7,6 @@
 #include <stdint.h>
 
 void FLASH_Erase(void);
-void FLASH_Write(uint32_t address, uint8_t *data, size_t length);
+uint8_t FLASH_Write(uint32_t address, uint8_t *data, size_t length);
 
 #endif

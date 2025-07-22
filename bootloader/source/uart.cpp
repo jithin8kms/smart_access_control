@@ -8,9 +8,8 @@ void UART_Init(UART_HandleTypeDef *uart3Ptr)
 }
 
 //---------------------------------------------------------------------------
-void SendMessage(const uint8_t *msg, uint8_t msg_len)
+void UART_LOG(const uint8_t *msg, uint8_t msg_len)
 {
 
 	HAL_UART_Transmit_IT(uart.uart3Ptr, msg, msg_len);
-	HAL_Delay(500);
 }

@@ -15,38 +15,56 @@ void FLASH_Erase(void)
   HAL_StatusTypeDef erase_status = HAL_FLASHEx_Erase(&erase_init, &sector_error);
   if (erase_status == HAL_ERROR)
   {
-    SendMessage((const uint8_t *)"Flash erase FAILED!!!", 21);
+    UART_LOG((const uint8_t *)"Flash erase FAILED!!!", 21);
   }
   else if (erase_status == HAL_OK)
   {
-    SendMessage((const uint8_t *)"Flash erase SUCCESS!!!", 21);
+    UART_LOG((const uint8_t *)"Flash erase SUCCESS!!!", 21);
   }
   else
   {
-    SendMessage((const uint8_t *)"Flash erase INVALID!!!", 21);
+    UART_LOG((const uint8_t *)"Flash erase INVALID!!!", 21);
   }
 
   HAL_FLASH_Lock();
+  HAL_Delay(10);
 }
 
-void FLASH_Write(uint32_t address, uint8_t *data, size_t length)
+uint8_t FLASH_Write(uint32_t address, uint8_t *data, size_t length)
 {
   assert_param((address % 4) == 0);
   assert_param((length % 4) == 0);
 
   FLASH_Erase();
   uint32_t next_address = address;
+  uint8_t success = 1; // OK
+
   HAL_FLASH_Unlock();
+
   for (int i = 0; i < (int)length; i += 4)
   {
     uint32_t packed_data = 0xFFFFFFFF;
     packed_data = ((uint32_t)data[i + 0]) | ((uint32_t)data[i + 1] << 8) | ((uint32_t)data[i + 2] << 16) | ((uint32_t)data[i + 3] << 24);
 
-    HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, next_address, packed_data);
+    success = (uint8_t)HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, next_address, packed_data);
 
     next_address += 4;
-    SendMessage((const uint8_t *)".", 1);
+    // UART_LOG((const uint8_t *)".", 1);
+
+    if (success != (uint8_t)HAL_OK)
+    {
+      UART_LOG((const uint8_t *)"Flash write Failed!", 20);
+      success = 0; // fail
+      break;
+    }
+    else
+    {
+      success = 1; // write success
+    }
   }
   HAL_FLASH_Lock();
-  SendMessage((const uint8_t *)"Done writing!", 12);
+
+  UART_LOG((const uint8_t *)"Done writing!", 12);
+  HAL_Delay(10);
+  return success;
 }

@@ -170,6 +170,9 @@ void CHIP_Spi1Init(SPI_HandleTypeDef *hspi1)
   GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+  HAL_NVIC_SetPriority(SPI1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(SPI1_IRQn);
+
   /* SPI1 parameter configuration*/
   hspi1->Instance = SPI1;
   hspi1->Init.Mode = SPI_MODE_SLAVE;
