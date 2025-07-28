@@ -2,7 +2,6 @@
 
 static uart_t uart = {0};
 TaskHandle_t tx_task_handle;
-#define UART_RX_BUF_SIZE 128
 
 void UART_Init(UART_HandleTypeDef *uart3Ptr)
 {
@@ -30,7 +29,7 @@ void UART_UartRxTask(void *arg)
 	uint8_t data = 0;
 	while (1)
 	{
-		//WTDG_Kick();
+		// WTDG_Kick();
 		xQueueReceive(uart.queue_rx, &data, portMAX_DELAY);
 
 		if (discard_data == true)
@@ -39,6 +38,15 @@ void UART_UartRxTask(void *arg)
 			{
 				discard_data = false;
 			}
+		}
+
+		else if (data == CMD_JUMP_TO_BOOTLOADER)
+		{
+			// Write magic flag to RAM
+			*((volatile uint32_t *)BOOTLOADER_FLAG_ADDR) = BOOTLOADER_MAGIC;
+
+			// Trigger software reset
+			NVIC_SystemReset();
 		}
 
 		else if (data == '\r' || data == '\n' || data == '\0')
@@ -81,7 +89,7 @@ void UART_UartTxTask(void *arg)
 	tx_task_handle = xTaskGetCurrentTaskHandle();
 	while (1)
 	{
-		//WTDG_Kick();
+		// WTDG_Kick();
 		tx_struct tx_data = {0};
 		xQueueReceive(uart.queue_tx, &tx_data, portMAX_DELAY);
 

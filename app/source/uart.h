@@ -16,6 +16,11 @@
 #define WRONG_PASSWORD_MSG "Wrong password"
 #define ACCESS_GRANTED_MSG "Access Granted"
 
+#define CMD_JUMP_TO_BOOTLOADER 0xBL
+#define BOOTLOADER_MAGIC 0xDEADBEEF
+#define BOOTLOADER_FLAG_ADDR  0x2001FFF0  // Last 16 bytes of SRAM1 (stay untouched on reset)
+
+
 struct tx_struct
 {
     uint8_t msg[100];

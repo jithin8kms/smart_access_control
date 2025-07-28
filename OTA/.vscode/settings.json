@@ -27,7 +27,18 @@
     "bitset": "c",
     "regex": "c",
     "freertos.h": "c",
-    "firmware_sender.h": "c"
+    "firmware_sender.h": "c",
+    "app_bin.h": "c",
+    "math.h": "c",
+    "chrono": "c",
+    "algorithm": "c",
+    "random": "c",
+    "format": "c",
+    "istream": "c",
+    "limits": "c",
+    "numeric": "c",
+    "spi.h": "c",
+    "task.h": "c"
   },
   "idf.flashType": "UART"
 }

@@ -3,7 +3,9 @@
       "*.cpp": "cpp",
       "task.h": "c",
       "stm32f4xx_it.h": "c",
-      "stdint.h": "c"
+      "stdint.h": "c",
+      "cstdio": "cpp",
+      "vcruntime.h": "c"
     },
     "terminal.integrated.scrollback": 10000,
     "terminal.integrated.cursorBlinking": true,

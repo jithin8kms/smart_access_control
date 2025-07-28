@@ -38,5 +38,6 @@ esp_err_t SPI_Transmit(const uint8_t* data, size_t len)
     .length = 8 * len, // bits
   };
   ret = spi_device_transmit(*spi_ptr, &trans_desc);
+  vTaskDelay(pdMS_TO_TICKS(10));
   return ret;
 }
