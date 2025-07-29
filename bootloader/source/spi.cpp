@@ -5,7 +5,7 @@
 SPI_HandleTypeDef *spi1 = NULL;
 
 uint8_t buffer[BUFFER_SIZE];
-uint8_t app_binary_buffer[APP_FLASH_BUFFER] = {0xFF};
+uint8_t app_binary_buffer[APP_FLASH_BUFFER];
 uint32_t app_buffer_next_addr = 0;
 uint8_t buffer_rx_len = 1;
 uint8_t write_to_flash_flag = false;
@@ -16,6 +16,7 @@ func_ptr SPI_Init(SPI_HandleTypeDef *self_spi1)
 {
   spi1 = self_spi1;
   HAL_SPI_Receive_IT(spi1, buffer, buffer_rx_len); // Start receiving 64 bytes
+  memset(app_binary_buffer, 0xFF, sizeof(app_binary_buffer));
   return SPI_FlashApp;
 }
 
