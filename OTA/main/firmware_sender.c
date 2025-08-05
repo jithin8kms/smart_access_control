@@ -1,5 +1,6 @@
 #include "firmware_sender.h"
-#include "../../app/build/app_bin.h"
+#include "../../app/build/smart_access_control_bin.h"
+#include "../../app/build/smart_access_control_sig.h"
 #include "esp_crc.h"
 
 void FWSND_SendFirmware()

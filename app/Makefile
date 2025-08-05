@@ -1,4 +1,3 @@
-
 ####################################
 # Target and Toolchain Setup
 ####################################
@@ -54,22 +53,36 @@ CFLAGS   = $(MCUFLAGS) -Wall -O0 -g3 -std=c11 -ffreestanding -fdata-sections -ff
 CXXFLAGS = $(MCUFLAGS) -Wall -O0 -g3 -std=c++17 -fno-exceptions -fno-rtti -ffreestanding -fdata-sections -ffunction-sections
 LDFLAGS  = $(MCUFLAGS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--gc-sections -T$(LINKER)
 
+####################################
+# Files for Signing
+####################################
+PRIVATE_KEY = keys/private.pem
+BIN_FILE = $(BUILD_DIR)/$(TARGET).bin
+SIG_FILE = $(BUILD_DIR)/$(TARGET).sig
+
+BIN_HEADER = $(BUILD_DIR)/$(TARGET)_bin.h
+SIG_HEADER = $(BUILD_DIR)/$(TARGET)_sig.h
 
 ####################################
 # Build Targets
 ####################################
-.PHONY: all
-all: $(BUILD_DIR)/$(TARGET).elf
+.PHONY: all clean
 
+all: $(BUILD_DIR)/$(TARGET).elf $(BIN_HEADER) $(SIG_HEADER)
+
+# Final ELF + BIN + HEX
 $(BUILD_DIR)/$(TARGET).elf: $(OBJS)
 	@mkdir -p $(BUILD_DIR)
 	$(LD) $(LDFLAGS) -o $@ $^
-	$(OBJCOPY) -O binary $@ $(BUILD_DIR)/$(TARGET).bin
+	$(OBJCOPY) -O binary $@ $(BIN_FILE)
 	$(OBJCOPY) -O ihex $@ $(BUILD_DIR)/$(TARGET).hex
 	$(SIZE) $@
 
+# Convert .elf -> .bin
+$(BIN_FILE): $(BUILD_DIR)/$(TARGET).elf
+	$(OBJCOPY) -O binary $< $@
 
-# Compilation rules
+# Compilation Rules
 $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)
 	$(CC) -c $(CFLAGS) $(INCLUDES) $< -o $@
@@ -83,9 +96,28 @@ $(BUILD_DIR)/%.o: %.s
 	$(CC) -c $(MCUFLAGS) $< -o $@
 
 ####################################
+# Post-build Actions
+####################################
+
+# Signature generation
+$(SIG_FILE): $(BIN_FILE)
+	@echo "🔐 Signing firmware..."
+	openssl dgst -sha256 -sign $(PRIVATE_KEY) -out $@ $<
+	@echo "✅ Signature saved as $@"
+
+# Create .h from .bin
+$(BIN_HEADER): $(BIN_FILE)
+	@echo "🧾 Generating bin header..."
+	xxd -i $< > $@
+
+# Create .h from .sig
+$(SIG_HEADER): $(SIG_FILE)
+	@echo "🧾 Generating signature header..."
+	xxd -i $< > $@
+
+####################################
 # Cleanup
 ####################################
-.PHONY: clean
 clean:
 	powershell -Command "Remove-Item -Recurse -Force build -ErrorAction SilentlyContinue"
 	powershell -Command "Remove-Item -Force *.elf, *.bin, *.hex -ErrorAction SilentlyContinue"
