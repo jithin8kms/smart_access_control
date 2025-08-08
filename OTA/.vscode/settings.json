@@ -38,7 +38,8 @@
     "limits": "c",
     "numeric": "c",
     "spi.h": "c",
-    "task.h": "c"
+    "task.h": "c",
+    "cstdint": "c"
   },
   "idf.flashType": "UART"
 }

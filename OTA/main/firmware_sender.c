@@ -9,6 +9,21 @@ void FWSND_SendFirmware()
   // sent start
   esp_err_t ret;
 
+  // prepere signature data
+  const char* sig_file_path = "../../app/build/smart_access_control.sig";
+  FILE* f = fopen(sig_file_path, "rb");  //
+
+  if (!f) {
+      perror("Failed to open signature file");
+      return 1;
+  }
+
+  uint8_t sig_buf[128];
+  size_t sig_len = fread(sig_buf, 1, sizeof(sig_buf), f);
+  fclose(f);
+  uint8_t sig_frame_size = 1 + 1 + sig_len + 4;
+
+
   uint8_t cmd = CMD_FIRMWARE_UPDATE;
   ret = SPI_Transmit(&cmd, 1);
   ESP_ERROR_CHECK(ret);
@@ -30,10 +45,11 @@ void FWSND_SendFirmware()
     ESP_LOGI("SPI", "Frame %d sent", i);
   }
 
-  // sent data end command
+  // sent firmware end frame
   uint8_t end_frame[BUFFER_SIZE] = {0xff};
   end_frame[CMD_OFFSET] = CMD_FIRMWARE_END;
   end_frame[LEN_OFFSET] = MAX_PAYLOAD_LENGTH;
+  end_frame[SIG_FRAME_SIZE_OFFSET] = sig_frame_size;
 
   write_u32_le(&end_frame[FIRMWARE_SIZE_OFFSET], build_smart_access_control_bin_len);
 
@@ -41,6 +57,16 @@ void FWSND_SendFirmware()
   write_u32_le(&end_frame[FIRMWARE_CRC_OFFSET], firmware_crc);
 
   ret = SPI_Transmit(end_frame, BUFFER_SIZE);
+  ESP_ERROR_CHECK(ret);
+
+  // sent sha256 signature
+
+  uint8_t sig_frame[sig_frame_size] = {0xff};
+  sig_frame[CMD_OFFSET] = CMD_SIG;
+  sig_frame[LEN_OFFSET] = sig_len;
+  memcpy(&sig_frame[PAYLOAD_OFFSET], sig_buf, sig_len);
+
+  ret = SPI_Transmit(sig_frame, sig_frame_size);
   ESP_ERROR_CHECK(ret);
 }
 

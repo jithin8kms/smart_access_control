@@ -56,7 +56,7 @@ LDFLAGS  = $(MCUFLAGS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--gc-sections -T$(LIN
 ####################################
 # Files for Signing
 ####################################
-PRIVATE_KEY = keys/private.pem
+PRIVATE_KEY = ../keys/private.pem
 BIN_FILE = $(BUILD_DIR)/$(TARGET).bin
 SIG_FILE = $(BUILD_DIR)/$(TARGET).sig
 
@@ -68,7 +68,7 @@ SIG_HEADER = $(BUILD_DIR)/$(TARGET)_sig.h
 ####################################
 .PHONY: all clean
 
-all: $(BUILD_DIR)/$(TARGET).elf $(BIN_HEADER) $(SIG_HEADER)
+all: $(BUILD_DIR)/$(TARGET).elf $(BIN_HEADER)
 
 # Final ELF + BIN + HEX
 $(BUILD_DIR)/$(TARGET).elf: $(OBJS)
@@ -108,11 +108,6 @@ $(SIG_FILE): $(BIN_FILE)
 # Create .h from .bin
 $(BIN_HEADER): $(BIN_FILE)
 	@echo "🧾 Generating bin header..."
-	xxd -i $< > $@
-
-# Create .h from .sig
-$(SIG_HEADER): $(SIG_FILE)
-	@echo "🧾 Generating signature header..."
 	xxd -i $< > $@
 
 ####################################

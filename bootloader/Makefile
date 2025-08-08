@@ -31,7 +31,7 @@ INCLUDES = \
   -IDrivers/STM32F4xx_HAL_Driver/Inc/Legacy \
   -Iconfig \
   -Isource \
-  -Iinclude
+  -Iinclude \
 
 ####################################
 # Source Files & Object Mapping
@@ -52,12 +52,22 @@ CFLAGS   = $(MCUFLAGS) -Wall -O0 -g3 -std=c11 -ffreestanding -fdata-sections -ff
 CXXFLAGS = $(MCUFLAGS) -Wall -O0 -g3 -std=c++17 -fno-exceptions -fno-rtti -ffreestanding -fdata-sections -ffunction-sections
 LDFLAGS  = $(MCUFLAGS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--gc-sections -T$(LINKER)
 
+PUBLIC_KEY = ../keys/public.pem
+PUBLIC_KEY_H = $(BUILD_DIR)/public_pem.h
 
 ####################################
 # Build Targets
 ####################################
 .PHONY: all
 all: $(BUILD_DIR)/$(TARGET).elf
+
+
+# Convert PEM to C header
+$(PUBLIC_KEY_H): $(PUBLIC_KEY)
+	@echo "🧾 Generating public_key.h from PEM..."
+	@mkdir -p $(dir $@)
+	xxd -i $< > $@
+
 
 $(BUILD_DIR)/$(TARGET).elf: $(OBJS)
 	@mkdir -p $(BUILD_DIR)
@@ -67,18 +77,20 @@ $(BUILD_DIR)/$(TARGET).elf: $(OBJS)
 	$(SIZE) $@
 
 
-# Compilation rules
-$(BUILD_DIR)/%.o: %.c
+OBJ_DEPS = $(PUBLIC_KEY_H)
+
+$(BUILD_DIR)/%.o: %.c | $(OBJ_DEPS)
 	@mkdir -p $(dir $@)
 	$(CC) -c $(CFLAGS) $(INCLUDES) $< -o $@
 
-$(BUILD_DIR)/%.o: %.cpp
+$(BUILD_DIR)/%.o: %.cpp | $(OBJ_DEPS)
 	@mkdir -p $(dir $@)
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES) $< -o $@
 
-$(BUILD_DIR)/%.o: %.s
+$(BUILD_DIR)/%.o: %.s | $(OBJ_DEPS)
 	@mkdir -p $(dir $@)
 	$(CC) -c $(MCUFLAGS) $< -o $@
+
 
 ####################################
 # Cleanup
@@ -87,3 +99,4 @@ $(BUILD_DIR)/%.o: %.s
 clean:
 	powershell -Command "Remove-Item -Recurse -Force build -ErrorAction SilentlyContinue"
 	powershell -Command "Remove-Item -Force *.elf, *.bin, *.hex -ErrorAction SilentlyContinue"
+	powershell -Command "Remove-Item -Force $(PUBLIC_KEY_H) -ErrorAction SilentlyContinue"

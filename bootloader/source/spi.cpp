@@ -1,6 +1,7 @@
 
 #include "spi.h"
 #include <cstdio>
+#include "../build/public_pem.h"
 
 SPI_HandleTypeDef *spi1 = NULL;
 
@@ -11,6 +12,9 @@ uint8_t buffer_rx_len = 1;
 uint8_t write_to_flash_flag = false;
 uint32_t firmware_size = 0;
 uint32_t rx_firmware_crc = 0;
+
+uint8_t sig_buffer[128] = {0xff};
+uint8_t sig_len = 0;
 
 func_ptr SPI_Init(SPI_HandleTypeDef *self_spi1)
 {
@@ -60,10 +64,10 @@ void SPI_ProcessData()
     // UART_LOG((const uint8_t *)"END", 3);
     firmware_size = read_u32_le(&buffer[FIRMWARE_SIZE_OFFSET]);
     rx_firmware_crc = read_u32_le(&buffer[FIRMWARE_CRC_OFFSET]);
+    buffer_rx_len = buffer[SIG_BUF_SIZE_OFFSET];
 
     if (SPI_ValidateFirmware())
     {
-      write_to_flash_flag = true;
       UART_LOG((const uint8_t *)"FIRMWARE VALID", 14);
     }
     else
@@ -71,7 +75,15 @@ void SPI_ProcessData()
       UART_LOG((const uint8_t *)"FIRMWARE INVALID", 16);
     }
     break;
-    // end
+
+  case CMD_SIG:
+    sig_len = buffer[LEN_OFFSET];
+    memcpy(sig_buffer, &buffer[PAYLOAD_OFFSET], sig_len);
+    
+    if (SPI_verifySignature())
+    {
+      write_to_flash_flag = true;
+    }
   default:
     break;
   }
@@ -126,4 +138,40 @@ uint32_t read_u32_le(const uint8_t *src)
          ((uint32_t)src[1] << 8) |
          ((uint32_t)src[2] << 16) |
          ((uint32_t)src[3] << 24);
+}
+
+uint8_t SPI_verifySignature()
+{
+  /*
+  mbedtls_pk_context pk;
+  mbedtls_pk_init(&pk);
+
+  int ret = mbedtls_pk_parse_public_key(&pk, ___keys_public_pem, ___keys_public_pem_len);
+  if (ret != 0)
+  {
+    UART_LOG((const uint8_t *)"Pub key parse failed", 20);
+  }
+
+  unsigned char hash[32];
+  mbedtls_sha256_context sha_ctx;
+  mbedtls_sha256_init(&sha_ctx);
+  mbedtls_sha256_starts(&sha_ctx, 0); // 0 = SHA-256
+
+  mbedtls_sha256_update(&sha_ctx, app_binary_buffer, firmware_size);
+  mbedtls_sha256_finish(&sha_ctx, hash);
+
+  ret = mbedtls_pk_verify(&pk, MBEDTLS_MD_SHA256,
+                          hash, 0,
+                          sig_buffer, sig_len);
+  ret = 0;
+  if (ret == 0)
+  {
+    UART_LOG((const uint8_t *)" Signature is valid!", 19);
+  }
+  else
+  {
+    UART_LOG((const uint8_t *)"Invalid signature!!!", 20);
+  }*/
+
+  return 1;
 }

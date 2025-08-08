@@ -7,6 +7,8 @@
 #include "flash.h"
 #include <stdint.h>
 
+
+
 #define APP_FLASH_START_ADDRESS 0x08008000
 
 #define BUFFER_SIZE 70 // [cmd + len + payload + crc] [1+1+64+4]
@@ -16,6 +18,7 @@
 #define PAYLOAD_OFFSET 2
 #define FIRMWARE_SIZE_OFFSET 2
 #define FIRMWARE_CRC_OFFSET 6
+#define SIG_BUF_SIZE_OFFSET 10
 #define MAX_PAYLOAD_LENGTH 64
 #define CRC_1_OFFSET (BUFFER_SIZE - 4)
 #define CRC_2_OFFSET (BUFFER_SIZE - 3)
@@ -25,6 +28,7 @@
 #define CMD_FIRMWARE_UPDATE 0xA0
 #define CMD_FIRMWARE_PAYLOAD 0xA1
 #define CMD_FIRMWARE_END 0xA2
+#define CMD_SIG 0xA3
 
 #define CRC32_POLY 0xEDB88320 // reversed 0x04C11DB7 (little-endian)
 #define CRC32_INIT 0xFFFFFFFF
@@ -39,4 +43,5 @@ uint8_t SPI_CheckCrc(uint8_t *data_frame);
 uint32_t SPI_SoftwareCrc32(const uint8_t *data, size_t len);
 uint8_t SPI_ValidateFirmware(void);
 uint32_t read_u32_le(const uint8_t *src);
+uint8_t SPI_verifySignature();
 #endif
