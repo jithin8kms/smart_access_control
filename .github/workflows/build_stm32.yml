@@ -21,6 +21,11 @@ jobs:
         sudo apt update
         sudo apt install gcc-arm-none-eabi build-essential openssl xxd
 
+    - name: Restore private key
+      run: |
+        echo "${{ secrets.PRIVATE_KEY }}" > firmware/keys/private.pem
+        echo "Private key written to private.pem"
+
     - name: Build Bootloader
       working-directory: firmware/bootloader
       run: make
@@ -29,9 +34,6 @@ jobs:
       working-directory: firmware/app
       run: make
     
-    #- name: Restore private key
-    #  run: |
-    #    echo "${{ secrets.ECDSA_PRIV_KEY }}" > private.pem
     
     - name: Upload firmware artifacts
       uses: actions/upload-artifact@v4
@@ -42,3 +44,7 @@ jobs:
           firmware/app/build/smart_access_control.bin
           firmware/app/build/smart_access_control_bin.h
           firmware/app/build/smart_access_control.sig
+
+    - name: Cleanup private key
+      if: always()
+      run: rm -f firmware/keys/private.pem
