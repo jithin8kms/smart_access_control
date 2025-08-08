@@ -68,7 +68,7 @@ SIG_HEADER = $(BUILD_DIR)/$(TARGET)_sig.h
 ####################################
 .PHONY: all clean
 
-all: $(BUILD_DIR)/$(TARGET).elf $(BIN_HEADER)
+all: $(BUILD_DIR)/$(TARGET).elf $(BIN_HEADER) $(SIG_FILE)
 
 # Final ELF + BIN + HEX
 $(BUILD_DIR)/$(TARGET).elf: $(OBJS)
