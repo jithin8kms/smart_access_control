@@ -23,7 +23,7 @@ jobs:
 
     - name: Build Bootloader
       working-directory: firmware/stm32/bootloader
-      run: make -f Makefile_bootloader
+      run: make
 
     - name: Build App
       working-directory: firmware/stm32/app
