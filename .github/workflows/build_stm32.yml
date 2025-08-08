@@ -22,11 +22,11 @@ jobs:
         sudo apt install gcc-arm-none-eabi build-essential openssl xxd
 
     - name: Build Bootloader
-      working-directory: firmware/stm32/bootloader
+      working-directory: firmware/bootloader
       run: make
 
     - name: Build App
-      working-directory: firmware/stm32/app
+      working-directory: firmware/app
       run: make
     
     #- name: Restore private key
@@ -38,7 +38,7 @@ jobs:
       with:
         name: stm32-firmware
         path: |
-          firmware/stm32/bootloader/build/bootloader.bin
-          firmware/stm32/app/build/smart_access_control.bin
-          firmware/stm32/app/build/smart_access_control_bin.h
-          firmware/stm32/app/build/smart_access_control.sig
+          firmware/bootloader/build/bootloader.bin
+          firmware/app/build/smart_access_control.bin
+          firmware/app/build/smart_access_control_bin.h
+          firmware/app/build/smart_access_control.sig
