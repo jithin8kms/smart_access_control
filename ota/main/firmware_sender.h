@@ -31,6 +31,7 @@
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
+void FWSND_LocalInit();
 void FWSND_SendFirmware();
 void FWSND_AddCrc(uint8_t* data_frame);
 uint32_t SPI_SoftwareCrc32(const uint8_t *data, size_t len);

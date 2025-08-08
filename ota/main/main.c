@@ -20,5 +20,6 @@ void app_main(void)
   vTaskDelay(pdMS_TO_TICKS(1000)); // small delay after boot
   
   SPI_Init(&spi);
+  FWSND_LocalInit();
   FWSND_SendFirmware();
 }
