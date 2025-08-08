@@ -1,6 +1,5 @@
 #include "firmware_sender.h"
 #include "../../app/build/smart_access_control_bin.h"
-#include "../../app/build/smart_access_control_sig.h"
 #include "esp_crc.h"
 
 void FWSND_SendFirmware()
@@ -15,7 +14,6 @@ void FWSND_SendFirmware()
 
   if (!f) {
       perror("Failed to open signature file");
-      return 1;
   }
 
   uint8_t sig_buf[128];
@@ -61,7 +59,7 @@ void FWSND_SendFirmware()
 
   // sent sha256 signature
 
-  uint8_t sig_frame[sig_frame_size] = {0xff};
+  uint8_t sig_frame[sig_frame_size];
   sig_frame[CMD_OFFSET] = CMD_SIG;
   sig_frame[LEN_OFFSET] = sig_len;
   memcpy(&sig_frame[PAYLOAD_OFFSET], sig_buf, sig_len);
