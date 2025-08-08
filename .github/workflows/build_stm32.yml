@@ -1,0 +1,44 @@
+name: Build STM32 Bootloader and App
+
+on:
+  push:
+    paths:
+      - 'firmware/stm32/**'
+    branches: [ '*' ]
+  pull_request:
+    branches: [ '*' ]
+
+jobs:
+  build-stm32:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install gcc-arm-none-eabi build-essential openssl xxd
+
+    - name: Build Bootloader
+      working-directory: firmware/stm32/bootloader
+      run: make -f Makefile_bootloader
+
+    - name: Build App
+      working-directory: firmware/stm32/app
+      run: make
+    
+    #- name: Restore private key
+    #  run: |
+    #    echo "${{ secrets.ECDSA_PRIV_KEY }}" > private.pem
+    
+    - name: Upload firmware artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: stm32-firmware
+        path: |
+          firmware/stm32/bootloader/build/bootloader.bin
+          firmware/stm32/app/build/smart_access_control.bin
+          firmware/stm32/app/build/smart_access_control_bin.h
+          firmware/stm32/app/build/smart_access_control.sig
