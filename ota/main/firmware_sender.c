@@ -1,5 +1,6 @@
 #include "firmware_sender.h"
 #include "../../firmware/app/build/smart_access_control_bin.h"
+#include "../../firmware/app/build/smart_access_control_sig.h"
 #include "esp_crc.h"
 
 uint8_t sig_buf[128];
@@ -13,14 +14,8 @@ uint8_t *app_bin_data = NULL;
 void FWSND_LocalInit()
 {
   // prepere signature data
-  const char* sig_file_path = "../../firmware/app/build/smart_access_control.sig";
-  FILE* f = fopen(sig_file_path, "rb");  //
-
-  if (!f) {
-      perror("Failed to open signature file");
-  }
-  sig_len = fread(sig_buf, 1, sizeof(sig_buf), f);
-  fclose(f);
+  memcpy(sig_buf, smart_access_control_sig, smart_access_control_sig_len);
+  sig_len = smart_access_control_sig_len;
   sig_frame_size = 1 + 1 + sig_len + 4;
 
   app_bin_len = build_smart_access_control_bin_len;
