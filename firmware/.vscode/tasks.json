@@ -68,6 +68,22 @@
         "isDefault": false
       },
       "problemMatcher": []
+    }, 
+
+    {
+      "label": "Flash BL+APP",
+      "type": "shell",
+      "command": "st-flash",
+      "args": [
+        "write",
+        "app/build/smart_access_control_bl_app.bin",
+        "0x08000000"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
     }
   ]
 }
