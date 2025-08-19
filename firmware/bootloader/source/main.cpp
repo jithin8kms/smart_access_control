@@ -51,6 +51,13 @@ void InitAllModules(void)
 	UART_Init(&uart3);
 }
 
+void PrintAppVersion()
+{
+	const char *app_ver = FLASH_GetAppVersion();
+	UART_LOG((const uint8_t *)app_ver, (uint16_t)(strlen(app_ver)));
+	HAL_Delay(10);
+}
+
 void FirmwareUpdateLoop(void)
 {
 	func_ptr spi_flash_callback = SPI_Init(&hspi1);
@@ -65,8 +72,9 @@ void FirmwareUpdateLoop(void)
 		else if (flash_write_success_flag == 1)
 		{
 			UART_LOG((const uint8_t *)"Firmware update success", 23);
-
 			HAL_Delay(10);
+
+			PrintAppVersion();
 			JumpToApplication();
 		}
 		else
@@ -85,7 +93,8 @@ int main()
 
 	if (boot_flag != BOOTLOADER_MAGIC)
 	{
-		 JumpToApplication(); // go to app
+		PrintAppVersion();
+		JumpToApplication(); // go to app
 	}
 
 	*((volatile uint32_t *)BOOTLOADER_FLAG_ADDR) = 0; // clear flag

@@ -53,6 +53,11 @@ CFLAGS   = $(MCUFLAGS) -Wall -O0 -g3 -std=c11 -ffreestanding -fdata-sections -ff
 CXXFLAGS = $(MCUFLAGS) -Wall -O0 -g3 -std=c++17 -fno-exceptions -fno-rtti -ffreestanding -fdata-sections -ffunction-sections
 LDFLAGS  = $(MCUFLAGS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--gc-sections -T$(LINKER)
 
+#get git version number
+FW_VERSION= $(shell git describe --tags --abbrev=0)
+CFLAGS   += -DFW_VERSION=\"$(FW_VERSION)\"
+CXXFLAGS += -DFW_VERSION=\"$(FW_VERSION)\"
+
 ####################################
 # Files for Signing
 ####################################

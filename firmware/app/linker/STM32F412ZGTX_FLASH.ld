@@ -59,6 +59,12 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
+    /* app version lives here */
+  .app_version 0x08008400:
+  {
+    KEEP(*(.app_version))
+  } >FLASH
+
   /* The program code and other data into "FLASH" Rom type memory */
   .text :
   {

@@ -10,6 +10,8 @@
 extern "C" void SystemInit(void);
 UART_HandleTypeDef uart3;
 
+const char fw_version[] __attribute__((section(".app_version"))) = FW_VERSION; 
+
 void blink_task(void *arg)
 {
 	while (1)
