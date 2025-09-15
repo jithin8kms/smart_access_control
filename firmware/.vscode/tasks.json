@@ -20,14 +20,14 @@
       "group": "build"
     },
     {
-      "label": "Clean App",
+      "label": "Rebuild App",
       "type": "shell",
-      "command": "make",
-      "args": ["clean"],
+      "command": "make rebuild",
+      
       "options": {
         "cwd": "${workspaceFolder}/app"
       },
-      "group": "none"
+      "group": "build"
     },
     {
       "label": "Clean Bootloader",

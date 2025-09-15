@@ -22,6 +22,7 @@
 #define CMD_FIRMWARE_PAYLOAD 0xA1
 #define CMD_FIRMWARE_END 0xA2
 #define CMD_SIG 0xA3
+#define CMD_REQ_APP_VERSION 0xA4
 
 #define CRC32_POLY 0xEDB88320 // reversed 0x04C11DB7 (little-endian)
 #define CRC32_INIT 0xFFFFFFFF
@@ -32,6 +33,7 @@
 #endif
 
 void FWSND_LocalInit();
+void FWSND_ReqFwVersion();
 void FWSND_SendFirmware();
 void FWSND_AddCrc(uint8_t* data_frame);
 uint32_t SPI_SoftwareCrc32(const uint8_t *data, size_t len);

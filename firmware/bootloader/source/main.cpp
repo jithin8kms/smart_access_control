@@ -94,7 +94,7 @@ int main()
 	if (boot_flag != BOOTLOADER_MAGIC)
 	{
 		PrintAppVersion();
-		JumpToApplication(); // go to app
+		//JumpToApplication(); // go to app
 	}
 
 	*((volatile uint32_t *)BOOTLOADER_FLAG_ADDR) = 0; // clear flag
