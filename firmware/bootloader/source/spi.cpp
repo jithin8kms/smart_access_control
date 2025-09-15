@@ -46,7 +46,8 @@ void SPI_ProcessData()
     break;
 
   case CMD_REQ_APP_VERSION:
-    HAL_SPI_Transmit_IT(spi1, (uint8_t *)app_ver, (uint16_t)strlen(app_ver) + 1);
+    memcpy(tx_buffer, (uint8_t *)app_ver, strlen(app_ver));
+    buffer_rtx_len = 6;
     break;
 
   case CMD_FIRMWARE_UPDATE:
@@ -100,6 +101,8 @@ void SPI_ProcessData()
     break;
 
   default:
+    memset(tx_buffer, 0xFF, buffer_rtx_len);
+    buffer_rtx_len = 1;
     break;
   }
 }
