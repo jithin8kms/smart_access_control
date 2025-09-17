@@ -1,7 +1,7 @@
 ####################################
 # Target and Toolchain Setup
 ####################################
-TARGET      = smart_access_control
+TARGET      = sac
 MCU         = cortex-m4
 FPU         = -mfpu=fpv4-sp-d16
 FLOAT-ABI   = -mfloat-abi=hard

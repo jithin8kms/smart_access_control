@@ -1,6 +1,6 @@
 #include "firmware_sender.h"
-#include "../../firmware/app/build/smart_access_control_bin.h"
-#include "../../firmware/app/build/smart_access_control_sig.h"
+#include "../../firmware/app/build/sac_bin.h"
+#include "../../firmware/app/build/sac_sig.h"
 #include "esp_crc.h"
 
 uint8_t sig_buf[128];
@@ -16,12 +16,12 @@ uint8_t app_version[6] = {0xff};
 void FWSND_LocalInit()
 {
   // prepere signature data
-  memcpy(sig_buf, build_smart_access_control_sig, build_smart_access_control_sig_len);
-  sig_len = build_smart_access_control_sig_len;
+  memcpy(sig_buf, build_sac_sig, build_sac_sig_len);
+  sig_len = build_sac_sig_len;
   sig_frame_size = 1 + 1 + sig_len + 4;
 
-  app_bin_len = build_smart_access_control_bin_len;
-  app_bin_data = build_smart_access_control_bin;
+  app_bin_len = build_sac_bin_len;
+  app_bin_data = build_sac_bin;
 }
 
 void FWSND_ReqFwVersion()

@@ -42,9 +42,9 @@ jobs:
         name: stm32-firmware
         path: |
           firmware/bootloader/build/bootloader.bin
-          firmware/app/build/smart_access_control.bin
-          firmware/app/build/smart_access_control_bin.h
-          firmware/app/build/smart_access_control.sig
+          firmware/app/build/sac.bin
+          firmware/app/build/sac_bin.h
+          firmware/app/build/sac.sig
 
     - name: Cleanup private key
       if: always()
