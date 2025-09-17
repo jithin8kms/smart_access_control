@@ -6,6 +6,9 @@
 #include "uart.h"
 #include <stdint.h>
 
+#define FW_VERSION_ADDRESS 0x08008400
+
+const char *FLASH_GetAppVersion(void);
 void FLASH_Erase(void);
 uint8_t FLASH_Write(uint32_t address, uint8_t *data, size_t length);
 

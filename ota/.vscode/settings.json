@@ -39,7 +39,9 @@
     "numeric": "c",
     "spi.h": "c",
     "task.h": "c",
-    "cstdint": "c"
+    "cstdint": "c",
+    "smart_access_control_bin.h": "c",
+    "smart_access_control_sig.h": "c"
   },
   "idf.flashType": "UART"
 }

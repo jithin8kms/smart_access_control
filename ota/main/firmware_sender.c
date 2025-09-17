@@ -9,17 +9,32 @@ uint8_t sig_frame_size = 0;
 uint32_t app_bin_len;
 uint8_t *app_bin_data = NULL;
 
-
+uint8_t rx_buf[64] = {0xff};
+uint8_t dummy[64] = {0xff};
+uint8_t app_version[6] = {0xff};
 
 void FWSND_LocalInit()
 {
   // prepere signature data
-  memcpy(sig_buf, smart_access_control_sig, smart_access_control_sig_len);
-  sig_len = smart_access_control_sig_len;
+  memcpy(sig_buf, build_smart_access_control_sig, build_smart_access_control_sig_len);
+  sig_len = build_smart_access_control_sig_len;
   sig_frame_size = 1 + 1 + sig_len + 4;
 
   app_bin_len = build_smart_access_control_bin_len;
-  app_bin_data  = build_smart_access_control_bin;
+  app_bin_data = build_smart_access_control_bin;
+}
+
+void FWSND_ReqFwVersion()
+{
+  esp_err_t ret;
+
+  uint8_t cmd = CMD_REQ_APP_VERSION;
+  ret = SPI_Transfer(&cmd, rx_buf, 1);
+  ESP_ERROR_CHECK(ret);
+  rx_buf[0] = 0xff;
+  ret = SPI_Transfer(dummy, rx_buf, 6);
+  memcpy(app_version, rx_buf, 6);
+  ESP_LOGI("SPI", "STM32 FW Version: %s", rx_buf);
 }
 
 void FWSND_SendFirmware()
@@ -29,7 +44,7 @@ void FWSND_SendFirmware()
   esp_err_t ret;
 
   uint8_t cmd = CMD_FIRMWARE_UPDATE;
-  ret = SPI_Transmit(&cmd, 1);
+  ret = SPI_Transfer(&cmd, NULL, 1);
   ESP_ERROR_CHECK(ret);
 
   // send data frame
@@ -44,7 +59,7 @@ void FWSND_SendFirmware()
     memcpy(&data_frame[PAYLOAD_OFFSET], &app_bin_data[i], payload_len);
     FWSND_AddCrc(data_frame);
 
-    ret = SPI_Transmit(data_frame, BUFFER_SIZE);
+    ret = SPI_Transfer(data_frame, NULL, BUFFER_SIZE);
     ESP_ERROR_CHECK(ret);
     ESP_LOGI("SPI", "Frame %d sent", i);
   }
@@ -60,7 +75,7 @@ void FWSND_SendFirmware()
   uint32_t firmware_crc = SPI_SoftwareCrc32(app_bin_data, app_bin_len);
   write_u32_le(&end_frame[FIRMWARE_CRC_OFFSET], firmware_crc);
 
-  ret = SPI_Transmit(end_frame, BUFFER_SIZE);
+  ret = SPI_Transfer(end_frame, NULL, BUFFER_SIZE);
   ESP_ERROR_CHECK(ret);
 
   // sent sha256 signature
@@ -70,7 +85,7 @@ void FWSND_SendFirmware()
   sig_frame[LEN_OFFSET] = sig_len;
   memcpy(&sig_frame[PAYLOAD_OFFSET], sig_buf, sig_len);
 
-  ret = SPI_Transmit(sig_frame, sig_frame_size);
+  ret = SPI_Transfer(sig_frame, NULL, sig_frame_size);
   ESP_ERROR_CHECK(ret);
 }
 
@@ -103,8 +118,8 @@ void FWSND_AddCrc(uint8_t *data_frame)
 
 void write_u32_le(uint8_t *dest, uint32_t value)
 {
-    dest[0] = (uint8_t)(value & 0xFF);
-    dest[1] = (uint8_t)((value >> 8) & 0xFF);
-    dest[2] = (uint8_t)((value >> 16) & 0xFF);
-    dest[3] = (uint8_t)((value >> 24) & 0xFF);
+  dest[0] = (uint8_t)(value & 0xFF);
+  dest[1] = (uint8_t)((value >> 8) & 0xFF);
+  dest[2] = (uint8_t)((value >> 16) & 0xFF);
+  dest[3] = (uint8_t)((value >> 24) & 0xFF);
 }

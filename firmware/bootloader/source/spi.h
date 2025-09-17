@@ -7,8 +7,6 @@
 #include "flash.h"
 #include <stdint.h>
 
-
-
 #define APP_FLASH_START_ADDRESS 0x08008000
 
 #define BUFFER_SIZE 70 // [cmd + len + payload + crc] [1+1+64+4]
@@ -29,6 +27,10 @@
 #define CMD_FIRMWARE_PAYLOAD 0xA1
 #define CMD_FIRMWARE_END 0xA2
 #define CMD_SIG 0xA3
+#define CMD_REQ_APP_VERSION 0xA4
+
+#define CMD_ESP_READY   0xCA 
+#define CMD_STM_READY   0xCB 
 
 #define CRC32_POLY 0xEDB88320 // reversed 0x04C11DB7 (little-endian)
 #define CRC32_INIT 0xFFFFFFFF

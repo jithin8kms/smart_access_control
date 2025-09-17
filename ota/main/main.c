@@ -21,5 +21,12 @@ void app_main(void)
   
   SPI_Init(&spi);
   FWSND_LocalInit();
-  FWSND_SendFirmware();
+
+  while (!SPI_IsStmReady()) 
+  {
+    SPI_SendReadyCmd();
+  }
+
+  FWSND_ReqFwVersion();
+  //FWSND_SendFirmware();
 }

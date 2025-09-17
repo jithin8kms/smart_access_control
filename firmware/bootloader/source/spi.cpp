@@ -5,52 +5,65 @@
 
 SPI_HandleTypeDef *spi1 = NULL;
 
-uint8_t buffer[BUFFER_SIZE];
+uint8_t rx_buffer[BUFFER_SIZE];
 uint8_t app_binary_buffer[APP_FLASH_BUFFER];
 uint32_t app_buffer_next_addr = 0;
-uint8_t buffer_rx_len = 1;
+uint8_t buffer_rtx_len = 1;
 uint8_t write_to_flash_flag = false;
 uint32_t firmware_size = 0;
 uint32_t rx_firmware_crc = 0;
+uint8_t tx_buffer[10] = {0xff};
 
 uint8_t sig_buffer[128] = {0xff};
 uint8_t sig_len = 0;
+const char *app_ver = FLASH_GetAppVersion();
+uint8_t cmd;
 
 func_ptr SPI_Init(SPI_HandleTypeDef *self_spi1)
 {
   spi1 = self_spi1;
-  HAL_SPI_Receive_IT(spi1, buffer, buffer_rx_len); // Start receiving 64 bytes
+  HAL_SPI_TransmitReceive_IT(spi1, tx_buffer, rx_buffer, buffer_rtx_len);
   memset(app_binary_buffer, 0xFF, sizeof(app_binary_buffer));
   return SPI_FlashApp;
 }
 
-void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *spi)
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *spi)
 {
   if (spi->Instance == SPI1)
   {
     SPI_ProcessData();
-    HAL_SPI_Receive_IT(spi1, buffer, buffer_rx_len);
+    HAL_SPI_TransmitReceive_IT(spi1, tx_buffer, rx_buffer, buffer_rtx_len);
   }
 }
 
 void SPI_ProcessData()
 {
-  switch (buffer[CMD_OFFSET])
+  switch (rx_buffer[CMD_OFFSET])
   {
+  case CMD_ESP_READY:
+    tx_buffer[0] = CMD_STM_READY;
+    buffer_rtx_len = 1;
+    break;
+
+  case CMD_REQ_APP_VERSION:
+    memcpy(tx_buffer, (uint8_t *)app_ver, strlen(app_ver));
+    buffer_rtx_len = 6;
+    break;
+
   case CMD_FIRMWARE_UPDATE:
 
     // prepare to receiv
     app_buffer_next_addr = 0;
     UART_LOG((const uint8_t *)"START", 5);
-    buffer_rx_len = BUFFER_SIZE;
+    buffer_rtx_len = BUFFER_SIZE;
     break;
 
   case CMD_FIRMWARE_PAYLOAD:
 
-    if (SPI_CheckCrc(buffer) == true)
+    if (SPI_CheckCrc(rx_buffer) == true)
     {
-      memcpy(&app_binary_buffer[app_buffer_next_addr], &buffer[PAYLOAD_OFFSET], buffer[LEN_OFFSET]);
-      app_buffer_next_addr += buffer[LEN_OFFSET];
+      memcpy(&app_binary_buffer[app_buffer_next_addr], &rx_buffer[PAYLOAD_OFFSET], rx_buffer[LEN_OFFSET]);
+      app_buffer_next_addr += rx_buffer[LEN_OFFSET];
     }
     else
     {
@@ -62,9 +75,9 @@ void SPI_ProcessData()
 
   case CMD_FIRMWARE_END:
     // UART_LOG((const uint8_t *)"END", 3);
-    firmware_size = read_u32_le(&buffer[FIRMWARE_SIZE_OFFSET]);
-    rx_firmware_crc = read_u32_le(&buffer[FIRMWARE_CRC_OFFSET]);
-    buffer_rx_len = buffer[SIG_BUF_SIZE_OFFSET];
+    firmware_size = read_u32_le(&rx_buffer[FIRMWARE_SIZE_OFFSET]);
+    rx_firmware_crc = read_u32_le(&rx_buffer[FIRMWARE_CRC_OFFSET]);
+    buffer_rtx_len = rx_buffer[SIG_BUF_SIZE_OFFSET];
 
     if (SPI_ValidateFirmware())
     {
@@ -77,14 +90,19 @@ void SPI_ProcessData()
     break;
 
   case CMD_SIG:
-    sig_len = buffer[LEN_OFFSET];
-    memcpy(sig_buffer, &buffer[PAYLOAD_OFFSET], sig_len);
-    
+    sig_len = rx_buffer[LEN_OFFSET];
+    memcpy(sig_buffer, &rx_buffer[PAYLOAD_OFFSET], sig_len);
+
     if (SPI_verifySignature())
     {
       write_to_flash_flag = true;
     }
+    buffer_rtx_len = 1;
+    break;
+
   default:
+    memset(tx_buffer, 0xFF, buffer_rtx_len);
+    buffer_rtx_len = 1;
     break;
   }
 }

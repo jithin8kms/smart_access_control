@@ -53,6 +53,11 @@ CFLAGS   = $(MCUFLAGS) -Wall -O0 -g3 -std=c11 -ffreestanding -fdata-sections -ff
 CXXFLAGS = $(MCUFLAGS) -Wall -O0 -g3 -std=c++17 -fno-exceptions -fno-rtti -ffreestanding -fdata-sections -ffunction-sections
 LDFLAGS  = $(MCUFLAGS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--gc-sections -T$(LINKER)
 
+#get git version number
+FW_VERSION= $(shell git describe --tags --abbrev=0)
+CFLAGS   += -DFW_VERSION=\"$(FW_VERSION)\"
+CXXFLAGS += -DFW_VERSION=\"$(FW_VERSION)\"
+
 ####################################
 # Files for Signing
 ####################################
@@ -63,12 +68,18 @@ SIG_FILE = $(BUILD_DIR)/$(TARGET).sig
 BIN_HEADER = $(BUILD_DIR)/$(TARGET)_bin.h
 SIG_HEADER = $(BUILD_DIR)/$(TARGET)_sig.h
 
+BL_HEX = ../bootloader/build/bootloader.hex
+APP_HEX =    $(BUILD_DIR)/$(TARGET).hex
+BL_APP_HEX = $(BUILD_DIR)/$(TARGET)_bl_app.hex
+BL_APP_BIN = $(BUILD_DIR)/$(TARGET)_bl_app.bin
+
 ####################################
 # Build Targets
 ####################################
 .PHONY: all clean
 
-all: $(BUILD_DIR)/$(TARGET).elf $(BIN_HEADER) $(SIG_FILE)
+all: $(BUILD_DIR)/$(TARGET).elf $(BIN_HEADER) $(SIG_HEADER) $(BL_APP_BIN)
+rebuild: clean all
 
 # Final ELF + BIN + HEX
 $(BUILD_DIR)/$(TARGET).elf: $(OBJS)
@@ -95,6 +106,18 @@ $(BUILD_DIR)/%.o: %.s
 	@mkdir -p $(dir $@)
 	$(CC) -c $(MCUFLAGS) $< -o $@
 
+
+# combine bootloader + app hex
+$(BL_APP_HEX): $(APP_HEX)
+	@echo "🧾 Generating bl+app hex..."
+	hexmerge.py $(BL_HEX):0x0000: $(APP_HEX):0x8000: -o $(BL_APP_HEX)
+
+# convert to bl_app.bin
+$(BL_APP_BIN): $(BL_APP_HEX)
+	@echo "🧾 Generating bl+app bin..."
+	arm-none-eabi-objcopy -I ihex -O binary --gap-fill 0xFF $(BL_APP_HEX) $(BL_APP_BIN)
+
+
 ####################################
 # Post-build Actions
 ####################################
@@ -107,6 +130,10 @@ $(SIG_FILE): $(BIN_FILE)
 
 # Create .h from .bin
 $(BIN_HEADER): $(BIN_FILE)
+	@echo "🧾 Generating bin header..."
+	xxd -i $< > $@
+# Create .h from .bin
+$(SIG_HEADER): $(SIG_FILE)
 	@echo "🧾 Generating bin header..."
 	xxd -i $< > $@
 

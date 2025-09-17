@@ -20,14 +20,14 @@
       "group": "build"
     },
     {
-      "label": "Clean App",
+      "label": "Rebuild App",
       "type": "shell",
-      "command": "make",
-      "args": ["clean"],
+      "command": "make rebuild",
+      
       "options": {
         "cwd": "${workspaceFolder}/app"
       },
-      "group": "none"
+      "group": "build"
     },
     {
       "label": "Clean Bootloader",
@@ -61,6 +61,22 @@
       "args": [
         "write",
         "bootloader/build/bootloader.bin",
+        "0x08000000"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
+    }, 
+
+    {
+      "label": "Flash BL+APP",
+      "type": "shell",
+      "command": "st-flash",
+      "args": [
+        "write",
+        "app/build/smart_access_control_bl_app.bin",
         "0x08000000"
       ],
       "group": {

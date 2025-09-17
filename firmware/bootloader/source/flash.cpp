@@ -68,3 +68,8 @@ uint8_t FLASH_Write(uint32_t address, uint8_t *data, size_t length)
   HAL_Delay(10);
   return success;
 }
+
+const char *FLASH_GetAppVersion()
+{
+  return (const char *)FW_VERSION_ADDRESS;
+}
