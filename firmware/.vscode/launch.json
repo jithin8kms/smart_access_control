@@ -1,0 +1,49 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "app",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "openocd",
+      "serverpath": "C:/Tools/xpack-openocd/bin/openocd.exe",
+      "configFiles": [
+        "interface/stlink.cfg",
+        "target/stm32f4x.cfg"
+      ],
+      "searchDir": [
+        "C:/Tools/xpack-openocd/openocd/scripts"
+      ],
+      "device": "STM32F412ZG",
+      "runToEntryPoint": "main",
+      "executable": "app/build/smart_access_control.elf",
+      "postRestartCommands": [
+        "monitor reset halt",
+        "monitor halt"
+      ],
+      "svdFile": "app/system/STM32F412.svd"
+    },
+    {
+      "name": "bootloader",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "openocd",
+      "serverpath": "C:/Tools/xpack-openocd/bin/openocd.exe",
+      "configFiles": [
+        "interface/stlink.cfg",
+        "target/stm32f4x.cfg"
+      ],
+      "searchDir": [
+        "C:/Tools/xpack-openocd/openocd/scripts"
+      ],
+      "device": "STM32F412ZG",
+      "runToEntryPoint": "main",
+      "executable": "bootloader/build/bootloader.elf",
+      "postRestartCommands": [
+        "monitor reset halt",
+        "monitor halt"
+      ],
+      "svdFile": "bootloader/system/STM32F412.svd"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+xxd -i build/smart_access_control.bin > build/app_bin.h
