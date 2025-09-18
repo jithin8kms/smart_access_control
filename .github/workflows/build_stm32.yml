@@ -5,6 +5,7 @@ on:
     #paths:
     #  - 'firmware/stm32/**'
     branches: [ '*' ]
+    tags: ['v*']   
   pull_request:
     branches: [ '*' ]
 
