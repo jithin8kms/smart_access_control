@@ -5,6 +5,7 @@ on:
     #paths:
     #  - 'firmware/stm32/**'
     branches: [ '*' ]
+    tags: ['v*']   
   pull_request:
     branches: [ '*' ]
 
@@ -42,9 +43,120 @@ jobs:
         name: stm32-firmware
         path: |
           firmware/bootloader/build/bootloader.bin
-          firmware/app/build/smart_access_control.bin
-          firmware/app/build/smart_access_control_bin.h
-          firmware/app/build/smart_access_control.sig
+          firmware/app/build/sac.bin
+          firmware/app/build/sac_bin.h
+          firmware/app/build/sac.sig
+
+
+  # --- PUBLISH TO GITHUB PAGES (runs only on tag pushes like v1.2.3) ---
+    - name: Install jq (for JSON)
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: sudo apt-get update && sudo apt-get install -y jq
+
+    - name: Derive version & URLs
+      if: startsWith(github.ref, 'refs/tags/v')
+      id: meta
+      run: |
+        VERSION="${GITHUB_REF_NAME#v}"            # 'v1.2.3' -> '1.2.3'
+        BUILD="${GITHUB_RUN_NUMBER}"              # monotonic build number
+        REPO_OWNER="${{ github.repository_owner }}"
+        REPO_NAME="$(basename "$GITHUB_REPOSITORY")"
+        PAGES_BASE="https://${REPO_OWNER}.github.io/${REPO_NAME}"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "build=$BUILD" >> $GITHUB_OUTPUT
+        echo "pages_base=$PAGES_BASE" >> $GITHUB_OUTPUT
+
+    - name: Compute SHA256 & size
+      if: startsWith(github.ref, 'refs/tags/v')
+      id: hash
+      run: |
+        APP_BIN="firmware/app/build/sac.bin"
+        test -f "$APP_BIN" || (echo "Missing $APP_BIN" && exit 1)
+        SIZE=$(stat -c%s "$APP_BIN")
+        SHA=$(sha256sum "$APP_BIN" | awk '{print $1}')
+        echo "size=$SIZE" >> $GITHUB_OUTPUT
+        echo "sha256=$SHA" >> $GITHUB_OUTPUT
+
+    - name: Prepare OTA folder (worktree)
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: |
+        VERSION="${{ steps.meta.outputs.version }}"
+        mkdir -p ota/v${VERSION}
+        cp firmware/app/build/sac.bin ota/v${VERSION}/
+        cp firmware/app/build/sac.sig ota/v${VERSION}/
+
+    - name: Generate firmware.json (versioned)
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: |
+        VERSION="${{ steps.meta.outputs.version }}"
+        BUILD="${{ steps.meta.outputs.build }}"
+        SIZE="${{ steps.hash.outputs.size }}"
+        SHA="${{ steps.hash.outputs.sha256 }}"
+        BASE="${{ steps.meta.outputs.pages_base }}"
+        BIN_NAME="sac.bin"
+        SIG_NAME="sac.sig"
+        BIN_URL="${BASE}/ota/v${VERSION}/${BIN_NAME}"
+        SIG_URL="${BASE}/ota/v${VERSION}/${SIG_NAME}"
+        RELEASED_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+        MIN_BOOTLOADER="1"
+        ROLE="stm32_app"
+        SIG_ALGO="ECDSA_P256_SHA256"
+
+        jq -n --arg role "$ROLE" \
+              --arg version "$VERSION" \
+              --arg build "$BUILD" \
+              --arg released_at "$RELEASED_AT" \
+              --arg min_bootloader "$MIN_BOOTLOADER" \
+              --arg size "$SIZE" \
+              --arg sha "$SHA" \
+              --arg sig_algo "$SIG_ALGO" \
+              --arg bin_url "$BIN_URL" \
+              --arg sig_url "$SIG_URL" \
+              '{
+                role: $role,
+                version: $version,
+                build: ($build|tonumber),
+                released_at: $released_at,
+                min_bootloader: ($min_bootloader|tonumber),
+                size_bytes: ($size|tonumber),
+                sha256: $sha,
+                sig_algo: $sig_algo,
+                bin_url: $bin_url,
+                sig_url: $sig_url
+              }' > ota/v${VERSION}/firmware.json
+
+        # latest.json is just a copy pointing to the same URLs
+        cp ota/v${VERSION}/firmware.json ota/latest.json
+
+    - name: Checkout gh-pages branch
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: actions/checkout@v4
+      with:
+        ref: gh-pages
+        path: gh-pages
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Copy OTA files into gh-pages
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: |
+        VERSION="${{ steps.meta.outputs.version }}"
+        mkdir -p gh-pages/ota/v${VERSION}
+        cp -r ota/v${VERSION}/* gh-pages/ota/v${VERSION}/
+        cp ota/latest.json gh-pages/ota/latest.json
+
+    - name: Commit & push to gh-pages
+      if: startsWith(github.ref, 'refs/tags/v')
+      working-directory: gh-pages
+      run: |
+        git config user.name  "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add -A
+        if ! git diff --cached --quiet; then
+          git commit -m "OTA v${{ steps.meta.outputs.version }}"
+          git push origin gh-pages
+        else
+          echo "No changes to commit."
+        fi
 
     - name: Cleanup private key
       if: always()
