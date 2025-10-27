@@ -45,7 +45,7 @@
       "command": "st-flash",
       "args": [
         "write",
-        "app/build/smart_access_control.bin",
+        "app/build/sac.bin",
         "0x08008000"
       ],
       "group": {
@@ -76,7 +76,7 @@
       "command": "st-flash",
       "args": [
         "write",
-        "app/build/smart_access_control_bl_app.bin",
+        "app/build/sac_bl_app.bin",
         "0x08000000"
       ],
       "group": {

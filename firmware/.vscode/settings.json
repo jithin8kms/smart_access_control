@@ -5,7 +5,10 @@
       "stm32f4xx_it.h": "c",
       "stdint.h": "c",
       "cstdio": "cpp",
-      "vcruntime.h": "c"
+      "vcruntime.h": "c",
+      "bignum.h": "c",
+      "sha1.h": "c",
+      "md4.h": "c"
     },
     "terminal.integrated.scrollback": 10000,
     "terminal.integrated.cursorBlinking": true,
