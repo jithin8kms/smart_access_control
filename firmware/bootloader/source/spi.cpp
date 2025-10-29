@@ -81,11 +81,11 @@ void SPI_ProcessData()
 
     if (SPI_ValidateFirmware())
     {
-      UART_LOG((const uint8_t *)"FIRMWARE VALID", 14);
+      UART_LOG((const uint8_t *)"FWV", 4);
     }
     else
     {
-      UART_LOG((const uint8_t *)"FIRMWARE INVALID", 16);
+      // UART_LOG((const uint8_t *)"FIRMWARE INVALID", 16);
     }
     break;
 
@@ -93,9 +93,14 @@ void SPI_ProcessData()
     sig_len = rx_buffer[LEN_OFFSET];
     memcpy(sig_buffer, &rx_buffer[PAYLOAD_OFFSET], sig_len);
 
-    if (SPI_verifySignature())
+    if (!SPI_verifySignature())
     {
       write_to_flash_flag = true;
+      UART_LOG((const uint8_t *)"SIGV", 5);
+    }
+    else
+    {
+      UART_LOG((const uint8_t *)"SIGIV", 6);
     }
     buffer_rtx_len = 1;
     break;
@@ -160,14 +165,14 @@ uint32_t read_u32_le(const uint8_t *src)
 
 uint8_t SPI_verifySignature()
 {
-  /*
+
   mbedtls_pk_context pk;
   mbedtls_pk_init(&pk);
 
   int ret = mbedtls_pk_parse_public_key(&pk, ___keys_public_pem, ___keys_public_pem_len);
   if (ret != 0)
   {
-    UART_LOG((const uint8_t *)"Pub key parse failed", 20);
+    // UART_LOG((const uint8_t *)"Pub key parse failed", 20);
   }
 
   unsigned char hash[32];
@@ -181,15 +186,15 @@ uint8_t SPI_verifySignature()
   ret = mbedtls_pk_verify(&pk, MBEDTLS_MD_SHA256,
                           hash, 0,
                           sig_buffer, sig_len);
-  ret = 0;
+
   if (ret == 0)
   {
-    UART_LOG((const uint8_t *)" Signature is valid!", 19);
+    // UART_LOG((const uint8_t *)" Signature is valid!", 19);
   }
   else
   {
-    UART_LOG((const uint8_t *)"Invalid signature!!!", 20);
-  }*/
+    // UART_LOG((const uint8_t *)"Invalid signature!!!", 20);
+  }
 
-  return 1;
+  return ret;
 }

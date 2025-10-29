@@ -67,7 +67,7 @@ uint8_t SPI_IsStmReady()
   else if (ready_timeout == 100)
   {
     ESP_LOGI("SPI", "STM32 timeout");
-    return 1;
+    return 2;
   }
   else
   {
